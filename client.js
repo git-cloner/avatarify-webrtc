@@ -14,6 +14,10 @@ function createPeerConnection() {
         sdpSemantics: 'unified-plan'
     };
 
+    config.iceServers = [{
+        urls: 'stun:stun1.l.google.com:19302'
+    }];
+
     pc = new RTCPeerConnection(config);
 
     // register some listeners to help debugging
@@ -232,6 +236,6 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
-function onAvatarClick(avatar){
-    document.getElementById('avatar').value = avatar ;
+function onAvatarClick(avatar) {
+    document.getElementById('avatar').value = avatar;
 }
