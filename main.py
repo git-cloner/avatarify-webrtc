@@ -192,11 +192,11 @@ async def offer(request):
     params = await request.json()
     offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
 
-    #configuration = RTCConfiguration([
-    #    RTCIceServer("stun:stun1.l.google.com:19302")
-    #])
+    configuration = RTCConfiguration([
+        RTCIceServer("stun:stun1.l.google.com:19302")
+    ])
 
-    pc = RTCPeerConnection() #configuration
+    pc = RTCPeerConnection(configuration) 
     pc_id = "PeerConnection(%s)" % uuid.uuid4()
     pcs.add(pc)
 

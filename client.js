@@ -11,7 +11,8 @@ var dc = null, dcInterval = null;
 
 function createPeerConnection() {
     var config = {
-        sdpSemantics: 'unified-plan'
+        sdpSemantics: 'unified-plan',
+        iceCandidatePoolSize: 10
     };
 
     config.iceServers = [{
@@ -72,6 +73,8 @@ function negotiate() {
             offer.sdp = sdpFilterCodec('video', codec, offer.sdp);
         }
 
+        document.getElementById('offer-sdp').textContent = offer.sdp;
+
         return fetch('/offer', {
             body: JSON.stringify({
                 sdp: offer.sdp,
@@ -86,6 +89,7 @@ function negotiate() {
     }).then(function (response) {
         return response.json();
     }).then(function (answer) {
+        document.getElementById('answer-sdp').textContent = answer.sdp;
         return pc.setRemoteDescription(answer);
     }).catch(function (e) {
         alert(e);

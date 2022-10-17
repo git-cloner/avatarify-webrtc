@@ -2,6 +2,10 @@
 
 基于aiortc（webrtc的python实现）和dlib，采用服务器上的GPU计算资源实现动态换脸特效，使得云端算力的有效利用。
 
+Demo：https://gitclone.com/aiit/avatarify-webrtc/ ，【请注意，不要用手机网络，因为手机网络对webrtc的穿透还有问题】
+
+可在 https://gitclone.com/aiit 下载APP查看其他人脸特效
+
 ## 一、原理
 
 ### 1、webrtc
