@@ -4,7 +4,7 @@
 
 Demo：https://gitclone.com/aiit/avatarify-webrtc/ 
 
-可在 https://gitclone.com/aiit 下载APP查看其他人脸特效
+可在 https://aiit.gitclone.com/ 下载APP查看其他人脸特效
 
 ## 一、原理
 
