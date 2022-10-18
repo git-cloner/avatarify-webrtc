@@ -16,7 +16,10 @@ function createPeerConnection() {
     };
 
     config.iceServers = [{
-        urls: 'stun:stun1.l.google.com:19302'
+        //urls: 'stun:stun1.l.google.com:19302'
+        urls: "turn:gitclone.com:3478",
+        username: "webrtc",
+        credential: "Webrtc987123654"
     }];
 
     pc = new RTCPeerConnection(config);

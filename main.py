@@ -179,12 +179,12 @@ class VideoTransformTrack(MediaStreamTrack):
 
 
 async def index(request):
-    content = open(os.path.join(ROOT, "index.html"), "r").read()
+    content = open(os.path.join(ROOT, "index.html"), "r",encoding='utf-8').read()
     return web.Response(content_type="text/html", text=content)
 
 
 async def javascript(request):
-    content = open(os.path.join(ROOT, "client.js"), "r").read()
+    content = open(os.path.join(ROOT, "client.js"), "r",encoding='utf-8').read()
     return web.Response(content_type="application/javascript", text=content)
 
 
@@ -193,7 +193,8 @@ async def offer(request):
     offer = RTCSessionDescription(sdp=params["sdp"], type=params["type"])
 
     configuration = RTCConfiguration([
-        RTCIceServer("stun:stun1.l.google.com:19302")
+        #RTCIceServer("stun:stun1.l.google.com:19302")
+        RTCIceServer("turn:gitclone.com:3478", "webrtc", "Webrtc987123654")
     ])
 
     pc = RTCPeerConnection(configuration) 
@@ -222,7 +223,6 @@ async def offer(request):
     @pc.on("track")
     def on_track(track):
         log_info("Track %s received", track.kind)
-        print("Track " + track.kind + " received")
         if track.kind == "video":
             pc.addTrack(
                 VideoTransformTrack(

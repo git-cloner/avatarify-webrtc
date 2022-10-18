@@ -2,7 +2,7 @@
 
 基于aiortc（webrtc的python实现）和dlib，采用服务器上的GPU计算资源实现动态换脸特效，使得云端算力的有效利用。
 
-Demo：https://gitclone.com/aiit/avatarify-webrtc/ ，【请注意，不要用手机网络，因为手机网络对webrtc的穿透还有问题】
+Demo：https://gitclone.com/aiit/avatarify-webrtc/ 
 
 可在 https://gitclone.com/aiit 下载APP查看其他人脸特效
 
@@ -19,6 +19,10 @@ Demo：https://gitclone.com/aiit/avatarify-webrtc/ ，【请注意，不要用�
 ### 2、换脸
 
 使用shape_predictor_68_face模型，识别人脸68个关键点，将脸图合并到原视频上。参考了https://blog.csdn.net/weixin_44152939/article/details/123866639。
+
+### 3、webrtc透传
+
+webrtc最难处理的就是udp透传，因为webrtc是p2p对等节点直接通讯，使用的是UDP，大多数设备都在防火墙后，没有公网IP，所以在使用中要用到stun（发现公网IP打通UDP端口）和turn（消息转发）技术，单纯使用stun，只有50%的几率能做到UDP透传，所以本示例中使用了coturn服务器进行了通讯中转。
 
 ## 二、环境安装
 
