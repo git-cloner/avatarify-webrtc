@@ -15,12 +15,17 @@ function createPeerConnection() {
         iceCandidatePoolSize: 10
     };
 
-    config.iceServers = [{
-        //urls: 'stun:stun1.l.google.com:19302'
-        urls: "turn:gitclone.com:3478",
-        username: "webrtc",
-        credential: "Webrtc987123654"
-    }];
+    var url = window.location.host;
+    if (url.includes("127.0.0.1")){
+        config.iceServers = [] ;    
+    }else{
+        config.iceServers = [{
+            //urls: 'stun:stun1.l.google.com:19302'
+            urls: "turn:gitclone.com:3478",
+            username: "webrtc",
+            credential: "Webrtc987123654"
+        }];
+    }
 
     pc = new RTCPeerConnection(config);
 
@@ -77,12 +82,15 @@ function negotiate() {
         }
 
         //document.getElementById('offer-sdp').textContent = offer.sdp;
-
+        var avatar_type = '0' ;
+        if (document.getElementById('avatar_type1').checked){
+            avatar_type = '1' ;
+        }
         return fetch('/offer', {
             body: JSON.stringify({
                 sdp: offer.sdp,
                 type: offer.type,
-                avatar: document.getElementById('avatar').value
+                avatar: document.getElementById('avatar').value + "|" + avatar_type
             }),
             headers: {
                 'Content-Type': 'application/json'

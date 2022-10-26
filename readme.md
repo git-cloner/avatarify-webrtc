@@ -20,7 +20,11 @@ Demo：https://gitclone.com/aiit/avatarify-webrtc/
 
 使用shape_predictor_68_face模型，识别人脸68个关键点，将脸图合并到原视频上。参考了https://blog.csdn.net/weixin_44152939/article/details/123866639。
 
-### 3、udp透传
+### 3、表情跟随
+
+使用了https://github.com/alievk/avatarify-python 技术，应用first-order-model。
+
+### 4、udp透传
 
 webrtc最难处理的就是udp透传，因为webrtc是p2p对等节点直接通讯，使用的是UDP，大多数设备都在防火墙后，没有公网IP，所以在使用中要用到stun（发现公网IP打通UDP端口）和turn（消息转发）技术，单纯使用stun，只有50%的几率能做到UDP透传，所以本示例中使用了coturn服务器进行了通讯中转。
 
@@ -33,18 +37,21 @@ webrtc最难处理的就是udp透传，因为webrtc是p2p对等节点直接通�
 ### 2、建立python3.7虚拟环境
 
 ```shell
-conda create -n opencv python=3.7
-conda activate opencv
+conda create -n avatarify python=3.7
+conda activate avatarify
+pip install torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html
+git clone https://github.com/alievk/first-order-model.git fomm
 pip install -r requirements.txt
 conda deactivate
 模型文件比较大，从https://gitclone.com/download1/model/shape_predictor_68_face_landmarks.dat下载后放到model目录下。
+下载https://gitclone.com/download1/model/vox-adv-cpk.pth.tar，放到项目根目录下。
 ```
 
 ### 3、运行
 
 ```shell
-conda activate opencv
-python main.py
+windows:run_windows.bat
+linux:run.sh
 然后在chrome中浏览：http://127.0.0.1:8080
 ```
 
