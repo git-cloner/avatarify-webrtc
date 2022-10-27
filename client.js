@@ -90,7 +90,8 @@ function negotiate() {
             body: JSON.stringify({
                 sdp: offer.sdp,
                 type: offer.type,
-                avatar: document.getElementById('avatar').value + "|" + avatar_type
+                //avatar: document.getElementById('avatar').value + "|" + avatar_type
+                avatar: 'gqwtest' + "|" + avatar_type
             }),
             headers: {
                 'Content-Type': 'application/json'

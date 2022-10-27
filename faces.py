@@ -102,6 +102,7 @@ def load_custom_avatar(avatar):
         urllib.request.urlretrieve(url=url_request, filename=fileName)
         return fileName
     except Exception as e:
+        print(e)
         return None
     urllib.request.urlcleanup()
 

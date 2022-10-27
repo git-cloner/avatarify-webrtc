@@ -56,7 +56,7 @@ class VideoTransformTrack(MediaStreamTrack):
                 self.avatar)
         elif self.avatar_type == "1":
             self.fomm_predictor, self.avatar_kp = fomm_load_predictor(
-                int(self.avatar) - 1)
+                self.avatar)
         else:
             self.fomm_predictor, self.avatar_kp = None, None
         # init var

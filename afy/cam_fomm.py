@@ -5,7 +5,7 @@ import glob
 import time
 import dlib
 import threading
-#import torch
+import urllib
 import numpy as np
 import cv2
 import torch
@@ -92,11 +92,29 @@ def is_new_frame_better(source, driving, predictor, avatar_kp):
     else:
         return False
 
+def load_custom_avatar(images_list,avatarnum):
+    if avatarnum.isdigit():
+        return
+    url_request = "https://classnotfound.com.cn/aiit/avatar/" + avatarnum + ".jpg"
+    fileName = "./avatars/temp/" + avatarnum + ".jpg"
 
-def load_images(IMG_SIZE=256):
+    opener = urllib.request.build_opener()
+    opener.addheaders = [('Authorization', 'Basic YXZhdGFyOkF2YXRhckA3ODk0NTYxMjM=')]
+    urllib.request.install_opener(opener)
+    try:
+        urllib.request.urlretrieve(url=url_request,filename=fileName)
+        images_list[-1] = fileName
+    except Exception as e:
+        log(e)
+    urllib.request.urlcleanup()    
+
+def load_images(avatarnum):
+    IMG_SIZE=256
     avatars = []
     filenames = []
-    images_list = sorted(glob.glob(f'./avatars/*'))
+    images_list = sorted(glob.glob(f'./avatars/*.*'))
+    if not avatarnum.isdigit():
+        load_custom_avatar(images_list,avatarnum)
     for i, f in enumerate(images_list):
         if f.endswith('.jpg') or f.endswith('.jpeg') or f.endswith('.png'):
             img = cv2.imread(f)
@@ -134,9 +152,20 @@ def fomm_load_predictor(avatarnum):
         'adapt_movement_scale': True,
         'enc_downscale': 1
     }
-    avatars, avatar_names = load_images()
+    avatars, avatar_names = load_images(avatarnum)
     predictor = predictor_local.PredictorLocal(**predictor_args)
-    avatar_kp = change_avatar(predictor, avatars[avatarnum])
+    # custom avatar
+    cur_ava = 0
+    if avatarnum.isdigit():
+        cur_ava = int(avatarnum)
+        if cur_ava > 0:
+            cur_ava = cur_ava - 1
+    else:
+        if len(avatars) == 9:
+            cur_ava = 8
+        else:
+            cur_ava = 0
+    avatar_kp = change_avatar(predictor, avatars[cur_ava])
     return predictor, avatar_kp
 
 
@@ -200,6 +229,7 @@ def fomm_change_frame(predictor, avatar_kp, frame,last_x,last_y,last_w,last_h,is
         # detect faces
         if is_detectface :
             faces = detect_face(frame)
+            predictor.reset_frames()
             if(len(faces) > 0):
                 frame, last_x, last_y, last_w, last_h = crop_face(
                     frame, faces[0], last_x, last_y, last_w, last_h)
