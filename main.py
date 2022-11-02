@@ -11,8 +11,9 @@ from av import VideoFrame
 import aiohttp_cors
 from aiortc import MediaStreamTrack, RTCPeerConnection, RTCSessionDescription, RTCConfiguration, RTCIceServer
 from aiortc.contrib.media import MediaBlackhole, MediaRecorder, MediaRelay
-from afy.cam_fomm import fomm_load_predictor, fomm_change_face, fomm_change_frame,fomm_test_predictor
-from faces import load_detector,load_landmarks,face_avatar
+from afy.cam_fomm import fomm_load_predictor, fomm_change_face, fomm_change_frame, fomm_test_predictor, InitOutPipe, InitLiveKitCli
+from faces import load_detector, load_landmarks, face_avatar
+
 
 def parseTransParams(transform):
     params = transform.split("|")
@@ -40,6 +41,7 @@ logger = logging.getLogger("pc")
 pcs = set()
 relay = MediaRelay()
 
+
 class VideoTransformTrack(MediaStreamTrack):
 
     kind = "video"
@@ -61,12 +63,33 @@ class VideoTransformTrack(MediaStreamTrack):
             self.fomm_predictor, self.avatar_kp = None, None
         # init var
         self.skip_frame = 0
-        self.skip_detectface= 0
+        self.skip_detectface = 0
         self.new_frame = None
         self.last_x = 0
         self.last_y = 0
         self.last_w = 0
         self.last_h = 0
+        # init pipe
+        self.filename = ""
+        self.livekit_cli_cmd = ""
+        self.pipe = None
+        self.livekit_cli_process = None
+        if self.avatar_room != "":
+            self.filename = '/tmp/' + self.avatar_room + '__' + \
+                self.avatar_id + '__' + self.avatar + '.h264.sock'
+            self.pipe = InitOutPipe(self.filename)
+            self.livekit_cli_cmd = InitLiveKitCli(
+                self.avatar_room, self.avatar_id, self.filename)
+
+    def __del__(self):
+        if self.pipe is not None:
+            self.pipe.kill()
+            print("ffmpeg pipe be killed")
+        if self.livekit_cli_process is not None:
+            if self.livekit_cli_process.pid != 0:
+                self.livekit_cli_process.kill()
+                print("livekit-cli be killed")
+        return
 
     async def recv(self):
         frame = await self.track.recv()
@@ -92,16 +115,29 @@ class VideoTransformTrack(MediaStreamTrack):
                 return self.new_frame
         elif self.avatar_type == "1":
             if self.skip_frame == 0:
-                is_detectface =(self.skip_detectface == 0)
+                is_detectface = (self.skip_detectface == 0)
                 img = frame.to_ndarray(format="bgr24")
                 try:
                     img, self.last_x, self.last_y, self.last_w, self.last_h = fomm_change_frame(
                         self.fomm_predictor, self.avatar_kp, img, self.last_x, self.last_y, self.last_w, self.last_h, is_detectface)
-                except  Exception as e:
+                except Exception as e:
                     print(e)
                     img = None
                 if img is not None:
-                    self.new_frame = VideoFrame.from_ndarray(img[..., ::-1], format="bgr24")
+                    self.new_frame = VideoFrame.from_ndarray(
+                        img[..., ::-1], format="bgr24")
+                    if self.pipe is not None:
+                        try:
+                            self.pipe.stdin.write(img[..., ::-1].tobytes())
+                        except Exception as e:
+                            print(e)
+                        try:
+                            if self.livekit_cli_process is None:
+                                if os.path.exists(self.filename):
+                                    self.livekit_cli_process = subprocess.Popen(
+                                        self.livekit_cli_cmd, shell=True)
+                        except Exception as e:
+                            print(e)
                     self.new_frame.pts = frame.pts
                     self.new_frame.time_base = frame.time_base
             self.skip_frame = self.skip_frame + 1
@@ -218,7 +254,7 @@ for route in list(app.router.routes()):
     })
 
 if __name__ == "__main__":
-    #fomm_test_predictor()
+    # fomm_test_predictor()
     load_detector()
     logging.basicConfig(level=logging.INFO)
     web.run_app(

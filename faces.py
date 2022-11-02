@@ -93,10 +93,10 @@ def load_custom_avatar(avatar):
         return None
     url_request = "https://classnotfound.com.cn/aiit/avatar/" + avatar + ".jpg"
     fileName = "./avatars/temp/" + avatar + ".jpg"
-
+    avatar_basic_auth = os.getenv('avatar_basic_auth')
     opener = urllib.request.build_opener()
     opener.addheaders = [
-        ('Authorization', 'Basic YXZhdGFyOkF2YXRhckA3ODk0NTYxMjM=')]
+        ('Authorization', 'Basic ' + avatar_basic_auth)]
     urllib.request.install_opener(opener)
     try:
         urllib.request.urlretrieve(url=url_request, filename=fileName)
