@@ -6,6 +6,9 @@ import os
 import ssl
 import uuid
 import urllib
+import subprocess
+import threading
+import time
 from aiohttp import web
 from av import VideoFrame
 import aiohttp_cors
@@ -14,6 +17,7 @@ from aiortc.contrib.media import MediaBlackhole, MediaRecorder, MediaRelay
 from afy.cam_fomm import fomm_load_predictor, fomm_change_face, fomm_change_frame, fomm_test_predictor, InitOutPipe, InitLiveKitCli
 from faces import load_detector, load_landmarks, face_avatar
 
+global RUN_LIVEKIT_CLI
 
 def parseTransParams(transform):
     params = transform.split("|")
@@ -34,6 +38,21 @@ def parseTransParams(transform):
         avatar_id = params[3]
     return avatar, avatar_type, avatar_room, avatar_id
 
+def publishAvatar(filename,commond):
+    global RUN_LIVEKIT_CLI
+    i = 0
+    while True:
+        print("Wait for ", filename)
+        if os.path.exists(filename):
+            break
+        # wait 1 miniute
+        i = i + 1
+        if i == 60:
+            return
+        time.sleep(1)
+    process = subprocess.Popen(commond, shell=True)
+    if process.pid != 0:
+        RUN_LIVEKIT_CLI[filename] = process
 
 ROOT = os.path.dirname(__file__)
 
@@ -71,24 +90,33 @@ class VideoTransformTrack(MediaStreamTrack):
         self.last_h = 0
         # init pipe
         self.filename = ""
-        self.livekit_cli_cmd = ""
         self.pipe = None
-        self.livekit_cli_process = None
         if self.avatar_room != "":
             self.filename = '/tmp/' + self.avatar_room + '__' + \
                 self.avatar_id + '__' + self.avatar + '.h264.sock'
             self.pipe = InitOutPipe(self.filename)
-            self.livekit_cli_cmd = InitLiveKitCli(
+            commond = InitLiveKitCli(
                 self.avatar_room, self.avatar_id, self.filename)
+            threading.Thread(target=publishAvatar,
+                         args=(self.filename,commond)).start()
 
     def __del__(self):
+        global RUN_LIVEKIT_CLI
         if self.pipe is not None:
             self.pipe.kill()
             print("ffmpeg pipe be killed")
-        if self.livekit_cli_process is not None:
-            if self.livekit_cli_process.pid != 0:
-                self.livekit_cli_process.kill()
-                print("livekit-cli be killed")
+        if self.filename != "" :
+            process = RUN_LIVEKIT_CLI.get(self.filename)
+            if process is not None :
+                process.kill()
+            if self.filename in RUN_LIVEKIT_CLI.keys() :
+                RUN_LIVEKIT_CLI.pop(self.filename)
+            print("livekit-cli process be killed")
+
+        if self.filename != "":
+            if os.path.exists(self.filename):
+                os.remove(self.filename)
+                print("remove sock file")
         return
 
     async def recv(self):
@@ -131,17 +159,10 @@ class VideoTransformTrack(MediaStreamTrack):
                             self.pipe.stdin.write(img[..., ::-1].tobytes())
                         except Exception as e:
                             print(e)
-                        try:
-                            if self.livekit_cli_process is None:
-                                if os.path.exists(self.filename):
-                                    self.livekit_cli_process = subprocess.Popen(
-                                        self.livekit_cli_cmd, shell=True)
-                        except Exception as e:
-                            print(e)
                     self.new_frame.pts = frame.pts
                     self.new_frame.time_base = frame.time_base
             self.skip_frame = self.skip_frame + 1
-            self.skip_frame = self.skip_frame % 5
+            self.skip_frame = self.skip_frame % 3
             self.skip_detectface = self.skip_detectface + 1
             self.skip_detectface = self.skip_detectface % 30
             if self.new_frame is None:
@@ -255,6 +276,7 @@ for route in list(app.router.routes()):
 
 if __name__ == "__main__":
     # fomm_test_predictor()
+    RUN_LIVEKIT_CLI = dict()
     load_detector()
     logging.basicConfig(level=logging.INFO)
     web.run_app(

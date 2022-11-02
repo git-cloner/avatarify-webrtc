@@ -70,7 +70,7 @@ def InitOutPipe(fileName):
                    '-color_trc', 'bt709',
                    '-colorspace', 'bt709',
                    '-fflags', 'nobuffer',
-                   '-loglevel', 'quiet',
+                   #'-loglevel', 'quiet',
                    rtmp]
     print(command)
     pipe = subprocess.Popen(command, stdin=subprocess.PIPE)
