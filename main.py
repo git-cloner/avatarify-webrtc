@@ -19,6 +19,7 @@ from faces import load_detector, load_landmarks, face_avatar
 
 global RUN_LIVEKIT_CLI
 
+
 def parseTransParams(transform):
     params = transform.split("|")
     avatar = "1"
@@ -38,7 +39,8 @@ def parseTransParams(transform):
         avatar_id = params[3]
     return avatar, avatar_type, avatar_room, avatar_id
 
-def publishAvatar(filename,commond):
+
+def publishAvatar(filename, commond):
     global RUN_LIVEKIT_CLI
     i = 0
     while True:
@@ -53,6 +55,7 @@ def publishAvatar(filename,commond):
     process = subprocess.Popen(commond, shell=True)
     if process.pid != 0:
         RUN_LIVEKIT_CLI[filename] = process
+
 
 ROOT = os.path.dirname(__file__)
 
@@ -91,6 +94,7 @@ class VideoTransformTrack(MediaStreamTrack):
         # init pipe
         self.filename = ""
         self.pipe = None
+        # support livekit
         if self.avatar_room != "":
             self.filename = '/tmp/' + self.avatar_room + '__' + \
                 self.avatar_id + '__' + self.avatar + '.h264.sock'
@@ -98,26 +102,23 @@ class VideoTransformTrack(MediaStreamTrack):
             commond = InitLiveKitCli(
                 self.avatar_room, self.avatar_id, self.filename)
             threading.Thread(target=publishAvatar,
-                         args=(self.filename,commond)).start()
+                             args=(self.filename, commond)).start()
 
     def __del__(self):
         global RUN_LIVEKIT_CLI
         if self.pipe is not None:
             self.pipe.kill()
             print("ffmpeg pipe be killed")
-        if self.filename != "" :
-            process = RUN_LIVEKIT_CLI.get(self.filename)
-            if process is not None :
-                process.kill()
-            if self.filename in RUN_LIVEKIT_CLI.keys() :
-                RUN_LIVEKIT_CLI.pop(self.filename)
-            print("livekit-cli process be killed")
-
         if self.filename != "":
-            if os.path.exists(self.filename):
-                os.remove(self.filename)
-                print("remove sock file")
-        return
+            if self.filename in RUN_LIVEKIT_CLI.keys():
+                process = RUN_LIVEKIT_CLI.get(self.filename)
+                if process is not None:
+                    process.kill()
+                RUN_LIVEKIT_CLI.pop(self.filename)
+                print("livekit-cli process be killed")
+                if os.path.exists(self.filename):
+                    os.remove(self.filename)
+                    print("remove sock file")
 
     async def recv(self):
         frame = await self.track.recv()
@@ -278,7 +279,8 @@ if __name__ == "__main__":
     # fomm_test_predictor()
     RUN_LIVEKIT_CLI = dict()
     load_detector()
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%m-%d %H:%M:%S',)
     web.run_app(
         app, access_log=None, host="0.0.0.0", port=8080, ssl_context=None
     )
