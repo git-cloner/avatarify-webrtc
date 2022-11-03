@@ -1,4 +1,4 @@
-# avatarify-webrtc
+# Avatarify-webrtc
 
 基于aiortc（webrtc的python实现）和dlib，采用服务器上的GPU计算资源实现动态换脸特效，使得云端算力的有效利用。
 
@@ -22,7 +22,7 @@ Demo：https://gitclone.com/aiit/avatarify-webrtc/
 
 ### 3、表情跟随
 
-使用了https://github.com/alievk/avatarify-python 技术，应用first-order-model。
+使用了https://github.com/alievk/avatarify-python 技术，应用first-order-model模型。
 
 ### 4、udp透传
 
@@ -56,20 +56,20 @@ conda deactivate
 
 ```shell
 windows:run_windows.bat
-linux:run.sh
+linux:./run.sh
 然后在chrome中浏览：http://127.0.0.1:8080
 ```
 
-注意：在本机测试只能用127.0.0.1，不能用实地址，因为chrome的摄像头有权限控制，如果客户端与服务器不在同一台机器上或未采用https连接，则要用以下的文件加白名单。
+注意：在本机测试只能用127.0.0.1，不能用实际地址，因为chrome的摄像头有权限控制，如果客户端与服务器不在同一台机器上或未采用https连接，则要用以下的文件加白名单。
 
 - 打开chrome://flags/#unsafely-treat-insecure-origin-as-secure
 - 查找Insecure origins treated as secure
 - 将Disabled改为Enabled，填写相应的URL，多个URL用逗号隔开
 - 修改后relaunch重启浏览器生效
 
-# 三、常见问题及解决方案
+## 三、常见问题及解决方案
 
-|                 |                                                              |
+| 问题            | 解决方案                                                     |
 | --------------- | ------------------------------------------------------------ |
 | UDP透传问题     | 采用coturn服务，应用sub + turn相结合的方案                   |
 | 算力性能问题    | 跳过一些帧，保证生成的视频能够追上原始帧                     |
