@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/meeting/node_modules
+/meeting/src/config.tsx
+/webmeeting/node_modules
+/webmeeting/src/config.tsx

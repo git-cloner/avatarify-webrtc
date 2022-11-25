@@ -8,5 +8,5 @@ pyfakewebcam==0.1.0
 av==8.0.3
 aiohttp==3.7.4.post0
 aiohttp_cors
-aiortc==1.2.0
+aiortc==1.3.2
 aioice==0.7.5

@@ -1,0 +1,39 @@
+.container {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto min-content min-content;
+  min-height: 0;
+  row-gap: 16px;
+}
+
+.stage {
+  display: grid;
+  overflow: hidden;
+}
+
+.participantsArea {
+  display: flex;
+  flex-direction: row;
+  column-gap: 8px;
+  overflow-x: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.participantsArea::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.participant {
+  flex-shrink: 0;
+  width: 180px;
+}
+
+.controlsArea {
+  height: 50px;
+  display: grid;
+  align-items: center;
+  justify-items: center;
+}
