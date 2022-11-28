@@ -1,3 +1,20 @@
 # Aiit Web
 
- run `yarn install` and then `yarn start` to test
+## Install
+
+```shell
+yarn install
+```
+
+## Test
+
+```shell
+yarn start
+```
+
+## Build
+
+```shell
+yarn build
+```
+

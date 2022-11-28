@@ -10,9 +10,6 @@ import { StageView } from './meeting/StageView';
 import { ControlsProps, ControlsView } from './meeting/ControlsView';
 import SelectAvatarDialog from './SelectAvatar';
 import { WebrtcCli } from './webrtc/WebrtcCli';
-import Box from '@mui/material/Box/Box';
-import Typography from '@mui/material/Typography/Typography';
-import CircularProgress, { CircularProgressProps } from '@mui/material/CircularProgress/CircularProgress';
 
 export const RoomPage = () => {
   const [numParticipants, setNumParticipants] = useState(0);
@@ -33,7 +30,6 @@ export const RoomPage = () => {
   const videoRefRemote = useRef<any>();
   const [webrtccli, setWebrtccli] = useState<any>();
   const [avatarStatus, setAvatarStatus] = useState("Avatar");
-  const [avatarProgress, setAvatarProgress] = useState(0);
 
   if (!url || !token) {
     return <div>url and token are required</div>;
@@ -56,19 +52,6 @@ export const RoomPage = () => {
     setOpen(true);
   };
 
-  const refreshProgress = () => {
-    var progress = 0 ;
-    const timer = setInterval(() => {
-      if (progress >= 100) {
-        setAvatarProgress(0);
-        clearInterval(timer)
-      } else {
-        progress = progress + 1 ;
-        setAvatarProgress(progress);
-      }
-    }, 300);
-  } ;
-
   const handleClose = (value: string) => {
     if (avatarStatus === "Avatar") {
       setOpen(false);
@@ -87,7 +70,6 @@ export const RoomPage = () => {
       });
       setWebrtccli(_webrtccli);
       _webrtccli.startRecording();
-      refreshProgress() ;      
     };
   };
 
@@ -125,52 +107,12 @@ export const RoomPage = () => {
     return <ControlsView room={props.room} onAvatar={onAvatar} onLeave={onLeave} avatarStatus={avatarStatus} />
   }
 
-  const AvatarProgressBar = () => {
-    if (avatarProgress > 0) {
-      return <div>
-        <CircularProgressWithLabel></CircularProgressWithLabel>
-      </div>;
-    }
-    else {
-      return <div></div>;
-    }
-  }
-
-  const CircularProgressWithLabel = (
-    props: CircularProgressProps
-  ) => {
-    return (
-      <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-        <CircularProgress variant="determinate" {...props} />
-        <Box
-          sx={{
-            top: 0,
-            left: 0,
-            bottom: 0,
-            right: 0,
-            position: 'absolute',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Typography
-            variant="caption"
-            component="div"
-            color="text.secondary"
-          >{`${Math.round(avatarProgress)}%`}</Typography>
-        </Box>
-      </Box>
-    );
-  }
-
   return (
     <DisplayContext.Provider value={displayOptions}>
       <div className="roomContainer">
         <div className="topBar">
           <label className='label'>room：{roomname}</label>
           <div className="right">
-            <AvatarProgressBar />
             <div>
               <input
                 id="showStats"
@@ -205,43 +147,47 @@ export const RoomPage = () => {
             </div>
           </div>
         </div>
-        <LiveKitRoom
-          url={url}
-          token={token}
-          onConnected={(room) => {
-            setLogLevel('info');
-            onConnected(room, query);
-            room.on(RoomEvent.ParticipantConnected, () => updateParticipantSize(room));
-            room.on(RoomEvent.ParticipantDisconnected, () => onParticipantDisconnected(room));
-            updateParticipantSize(room);
-          }}
-          roomOptions={{
-            adaptiveStream: isSet(query, 'adaptiveStream'),
-            dynacast: isSet(query, 'dynacast'),
-            videoCaptureDefaults: {
-              resolution: VideoPresets.h720.resolution,
-            },
-          }}
-          participantRenderer={(props: ParticipantProps) => {
-            return participantRenderer(props);
-          }}
-          stageRenderer={(props: StageProps) => {
-            return stageRenderer(props);
-          }}
+        <div className='roomPanal'>
+          <LiveKitRoom
+            url={url}
+            token={token}
+            onConnected={(room) => {
+              setLogLevel('info');
+              onConnected(room, query);
+              room.on(RoomEvent.ParticipantConnected, () => updateParticipantSize(room));
+              room.on(RoomEvent.ParticipantDisconnected, () => onParticipantDisconnected(room));
+              updateParticipantSize(room);
+            }}
+            roomOptions={{
+              adaptiveStream: isSet(query, 'adaptiveStream'),
+              dynacast: isSet(query, 'dynacast'),
+              videoCaptureDefaults: {
+                resolution: VideoPresets.h720.resolution,
+              },
+            }}
+            participantRenderer={(props: ParticipantProps) => {
+              return participantRenderer(props);
+            }}
+            stageRenderer={(props: StageProps) => {
+              return stageRenderer(props);
+            }}
 
-          controlRenderer={(props: ControlsProps) => {
-            //props.onAvatar = on
-            return controlRenderer(props);
-          }}
-          onLeave={onLeave}
-        />
+            controlRenderer={(props: ControlsProps) => {
+              //props.onAvatar = on
+              return controlRenderer(props);
+            }}
+            onLeave={onLeave}
+          />
+          <div className="roomVedio">
+            <video className='vedio' id="video_local" autoPlay ref={videoRefLocal} height="140" width="140"></video>
+            <video className='vedio' id="video_remote" autoPlay ref={videoRefRemote} height="140" width="140"></video>
+          </div>
+        </div>
         <div>
           <SelectAvatarDialog
             selectedValue={selectedValue}
             open={open}
-            onClose={handleClose} />
-          <video id="video_local" autoPlay playsInline ref={videoRefLocal} height="350" width="350"></video>
-          <video id="video_remote" autoPlay ref={videoRefRemote} height="350" width="350"></video>
+            onClose={handleClose} />          
         </div>
       </div>
     </DisplayContext.Provider>

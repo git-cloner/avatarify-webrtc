@@ -161,6 +161,22 @@ a:hover {
   color: blue ;
 }
 
+.roomPanal {
+  display: flex;
+  height: calc(100vh - 38px);
+}
+
+.roomPanal .roomVedio {
+  width: 180px;
+  border: 1px solid lightgray;
+  margin-top: 3px;
+  border-radius: 4px;
+}
+
+.roomPanal .roomVedio .vedio {
+  margin-left: 15px;  
+}
+
 .iconButton {
   cursor: pointer;
 }

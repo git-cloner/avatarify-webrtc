@@ -1,6 +1,6 @@
 import { faBolt, faDesktop, faPerson, faStop } from '@fortawesome/free-solid-svg-icons';
 import { Room } from 'livekit-client';
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useState } from 'react';
 import { useParticipant } from '@livekit/react-core';
 import { AudioSelectButton } from './AudioSelectButton';
 import { ControlButton } from './ControlButton';
@@ -8,6 +8,9 @@ import styles from './styles.module.css';
 import { VideoSelectButton } from './VideoSelectButton';
 import Stack from '@mui/material/Stack';
 import { useNavigate } from 'react-router-dom';
+import Box from '@mui/material/Box/Box';
+import Typography from '@mui/material/Typography/Typography';
+import CircularProgress, { CircularProgressProps } from '@mui/material/CircularProgress/CircularProgress';
 
 export interface ControlsProps {
   room: Room;
@@ -33,6 +36,7 @@ export const ControlsView = ({
   );
 
   const navigate = useNavigate();
+  const [avatarProgress, setAvatarProgress] = useState(0);
 
   if (enableScreenShare === undefined) {
     enableScreenShare = true;
@@ -43,6 +47,19 @@ export const ControlsView = ({
   if (enableAudio === undefined) {
     enableAudio = true;
   }
+
+  const refreshProgress = () => {
+    var progress = 0 ;
+    const timer = setInterval(() => {
+      if (progress >= 100) {
+        setAvatarProgress(0);
+        clearInterval(timer)
+      } else {
+        progress = progress + 1 ;
+        setAvatarProgress(progress);
+      }
+    }, 300);
+  } ;
 
   const [audioButtonDisabled, setAudioButtonDisabled] = React.useState(false);
   let muteButton: ReactElement | undefined;
@@ -137,9 +154,49 @@ export const ControlsView = ({
   let avatarButton: ReactElement | undefined;
   avatarButton = (
     <ControlButton label={avatarStatus ? avatarStatus:'avatar'} className={styles.avatarButton} icon={faPerson} onClick={() => {
+      refreshProgress() ; 
       onAvatar!(room);
     }}></ControlButton>
   );
+
+  const AvatarProgressBar = () => {
+    if (avatarProgress > 0) {
+      return <div>
+        <CircularProgressWithLabel></CircularProgressWithLabel>
+      </div>;
+    }
+    else {
+      return <div></div>;
+    }
+  }
+
+  const CircularProgressWithLabel = (
+    props: CircularProgressProps
+  ) => {
+    return (
+      <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+        <CircularProgress variant="determinate" {...props} />
+        <Box
+          sx={{
+            top: 0,
+            left: 0,
+            bottom: 0,
+            right: 0,
+            position: 'absolute',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Typography
+            variant="caption"
+            component="div"
+            color="text.secondary"
+          >{`${Math.round(avatarProgress)}%`}</Typography>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <div className={styles.controlsWrapper}>
@@ -159,6 +216,7 @@ export const ControlsView = ({
             }}
           />
         )}
+        <AvatarProgressBar />
       </Stack>
     </div>
   );

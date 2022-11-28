@@ -73,13 +73,13 @@ video.video {
 
 .buttonWrapper {
   display: inline-block;
-  margin: 4px;
+  margin: 0px;
   white-space: nowrap;
 }
 
 .button {
   display: inline-block;
-  border-radius: 44px;
+  border-radius: 20px;
   border: none;
   background: #2f2f2f;
   padding: 12px 20px 12px 20px;
@@ -88,6 +88,7 @@ video.video {
   font-weight: normal;
   font-size: 14px;
   white-space: nowrap;
+  height: 45px;
 }
 
 .button:active {
@@ -147,7 +148,7 @@ button.hasDropdown {
 }
 
 .popoverMenu {
-  background: #2f2f2f;
+  background: white;
   border-radius: 4px;
   margin-bottom: 5px;
 }
@@ -168,7 +169,7 @@ ul.list li {
 }
 
 ul.list li:hover {
-  background: #434343;
+  background: lightgray;
 }
 
 ul.list li:first-child {
