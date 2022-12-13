@@ -15,6 +15,7 @@ from afy.arguments import opt
 from afy.utils import info, Once, Tee, crop, pad_img, resize, TicToc
 import afy.camera_selector as cam_selector
 from afy import predictor_local
+from PIL import Image, ImageDraw, ImageFont
 
 
 # Where to split an array from face_alignment to separate each landmark
@@ -273,6 +274,18 @@ def fomm_change_face(predictor, avatar_kp):
     cap.stop
     cv2.destroyAllWindows()
 
+fontStyle = ImageFont.truetype("font/simsun.ttc", 16, encoding="utf-8")
+
+def cv2ImgAddText(img, text, left, top, textColor=(255, 0, 0)):
+    #start_time = time.time() 
+    if (isinstance(img, np.ndarray)): 
+        img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    draw = ImageDraw.Draw(img)
+    draw.text((left, top), text, textColor, font=fontStyle)
+    #end_time = time.time()
+    #run_time = end_time - start_time
+    #print(run_time)
+    return cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
 def fomm_change_frame(predictor, avatar_kp, frame, last_x, last_y, last_w, last_h, is_detectface):
     IMG_SIZE = 256
@@ -324,6 +337,7 @@ def fomm_change_frame(predictor, avatar_kp, frame, last_x, last_y, last_w, last_
         lock.acquire()
         try:
             out = predictor.predict(frame)
+            out = cv2ImgAddText(out, "AI生成", 10, 10)
         except Exception as e:
             print(e)
         finally:

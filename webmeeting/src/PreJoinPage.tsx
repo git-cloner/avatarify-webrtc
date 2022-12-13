@@ -202,7 +202,7 @@ export const PreJoinPage = () => {
   return (
     <div className="prejoin">
       <main>
-        <h2>Aiit web</h2>
+        <h2>Aiit meeting with avatar</h2>
         <div className="entrySection">
           <div>
             <div className="label">Room Number</div>

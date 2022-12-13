@@ -7,6 +7,7 @@ import os
 import ssl
 import uuid
 import urllib
+from PIL import Image, ImageDraw, ImageFont
 
 detector_face = None
 predictor_face = None
@@ -124,6 +125,18 @@ def load_landmarks(avatar):
     im1_mask = get_face_mask(im1_size, landmarks1)
     return im1, landmarks1, im1_mask
 
+fontStyle = ImageFont.truetype("font/simsun.ttc", 20, encoding="utf-8")
+
+def cv2ImgAddText(img, text, left, top, textColor=(255, 255, 0)):
+    #start_time = time.time() 
+    if (isinstance(img, np.ndarray)): 
+        img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    draw = ImageDraw.Draw(img)
+    draw.text((left, top), text, textColor, font=fontStyle)
+    #end_time = time.time()
+    #run_time = end_time - start_time
+    #print(run_time)
+    return cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
 def face_avatar(frame, im1, landmarks1, im1_mask):
     global detector_face
@@ -151,6 +164,6 @@ def face_avatar(frame, im1, landmarks1, im1_mask):
         point = get_mask_center_point(affine_im1_mask)
         seamless_im = cv2.seamlessClone(
             affine_im1, im2, mask=union_mask, p=point, flags=cv2.NORMAL_CLONE)
-        return seamless_im
+        return cv2ImgAddText(seamless_im, "AI生成", 10, 10)
     else:
         return None
