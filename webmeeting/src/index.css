@@ -167,10 +167,11 @@ a:hover {
 }
 
 .roomPanal .roomVedio {
-  width: 180px;
+  width: 240px;
   border: 1px solid lightgray;
   margin-top: 3px;
   border-radius: 4px;
+  height: calc(100vh - 140px);
 }
 
 .roomPanal .roomVedio .vedio {

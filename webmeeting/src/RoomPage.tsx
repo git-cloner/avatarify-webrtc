@@ -1,6 +1,6 @@
 import { faSquare, faThLarge, faUserFriends } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Room, RoomEvent, setLogLevel, VideoPresets } from 'livekit-client';
+import { DataPacket_Kind, Room, RoomEvent, setLogLevel, VideoPresets } from 'livekit-client';
 import { DisplayContext, DisplayOptions, LiveKitRoom, ParticipantProps, StageProps } from '@livekit/react-components';
 import { useRef, useState } from 'react';
 import 'react-aspect-ratio/aspect-ratio.css';
@@ -10,6 +10,8 @@ import { StageView } from './meeting/StageView';
 import { ControlsProps, ControlsView } from './meeting/ControlsView';
 import SelectAvatarDialog from './SelectAvatar';
 import { WebrtcCli } from './webrtc/WebrtcCli';
+import Chat, { Bubble, useMessages } from '@chatui/core';
+import '@chatui/core/dist/index.css';
 
 export const RoomPage = () => {
   const [numParticipants, setNumParticipants] = useState(0);
@@ -30,6 +32,9 @@ export const RoomPage = () => {
   const videoRefRemote = useRef<any>();
   const [webrtccli, setWebrtccli] = useState<any>();
   const [avatarStatus, setAvatarStatus] = useState("Avatar");
+  const encoder = new TextEncoder()
+  const decoder = new TextDecoder()
+  const { messages, appendMsg } = useMessages([]);
 
   if (!url || !token) {
     return <div>url and token are required</div>;
@@ -107,6 +112,36 @@ export const RoomPage = () => {
     return <ControlsView room={props.room} onAvatar={onAvatar} onLeave={onLeave} avatarStatus={avatarStatus} />
   }
 
+  function handleRecieveMessage(payload: any) {
+    const strData = decoder.decode(payload);
+    var recieveData = JSON.parse(strData);
+    appendMsg({
+      type: 'text',
+      content: { text: "(" + recieveData.user + ")" + recieveData.data },
+      position: 'left',
+      user: { avatar: '//gitclone.com/download1/user1.png' }
+    });
+  }
+
+  function handleSendMessage(type: any, val: any) {
+    if (type === 'text' && val.trim()) {
+      const strData = JSON.stringify({ "user": userid, "data": val })
+      const senddata = encoder.encode(strData);
+      (window as any).currentRoom.localParticipant.publishData(senddata, DataPacket_Kind.LOSSY)
+      appendMsg({
+        type: 'text',
+        content: { text: val },
+        position: 'right',
+        user: { avatar: '//gitclone.com/download1/user.png' }
+      });
+    }
+  }
+
+  function renderMessageContent(msg: any) {
+    const { content } = msg;
+    return <Bubble content={content.text} />;
+  }
+
   return (
     <DisplayContext.Provider value={displayOptions}>
       <div className="roomContainer">
@@ -156,6 +191,7 @@ export const RoomPage = () => {
               onConnected(room, query);
               room.on(RoomEvent.ParticipantConnected, () => updateParticipantSize(room));
               room.on(RoomEvent.ParticipantDisconnected, () => onParticipantDisconnected(room));
+              room.on(RoomEvent.DataReceived, (payload: Uint8Array) => handleRecieveMessage(payload));
               updateParticipantSize(room);
             }}
             roomOptions={{
@@ -179,15 +215,23 @@ export const RoomPage = () => {
             onLeave={onLeave}
           />
           <div className="roomVedio">
-            <video className='vedio' id="video_local" autoPlay ref={videoRefLocal} height="140" width="140"></video>
-            <video className='vedio' id="video_remote" autoPlay ref={videoRefRemote} height="140" width="140"></video>
+            <Chat
+              navbar={{ title: 'chat' }}
+              messages={messages}
+              renderMessageContent={renderMessageContent}
+              onSend={handleSendMessage}
+            />
           </div>
+        </div>
+        <div>
+          <video className='vedio' id="video_local" autoPlay ref={videoRefLocal} height="140" width="140"></video>
+          <video className='vedio' id="video_remote" autoPlay ref={videoRefRemote} height="140" width="140"></video>
         </div>
         <div>
           <SelectAvatarDialog
             selectedValue={selectedValue}
             open={open}
-            onClose={handleClose} />          
+            onClose={handleClose} />
         </div>
       </div>
     </DisplayContext.Provider>

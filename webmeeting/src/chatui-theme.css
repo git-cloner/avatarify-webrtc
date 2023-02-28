@@ -1,0 +1,16 @@
+:root {
+  font-size: 12px;
+  line-height:11px ;
+}
+.ChatApp,
+.Bubble{
+  max-width: 100vw;
+}
+.MessageContainer,
+.Navbar,
+.Message .Bubble,
+.QuickReplies,
+.ChatFooter {
+  background-repeat: no-repeat;
+  background-size: cover;
+}

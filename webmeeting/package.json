@@ -1,7 +1,7 @@
 {
-  "name": "aiit-web",
+  "name": "aiit-webmeeting",
   "homepage": ".",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
@@ -11,6 +11,7 @@
     "deploy": "gh-pages -d build"
   },
   "dependencies": {
+    "@chatui/core": "^2.4.2",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@fortawesome/free-solid-svg-icons": "^6.1.1",
